@@ -6,13 +6,15 @@ local cjson = require "cjson"
 
 local sub = string.sub
 local find = string.find
-local ipairs = ipairs
 local select = select
 local tonumber = tonumber
+local kong = kong
+
 
 local tagline = "Welcome to " .. _KONG._NAME
 local version = _KONG._VERSION
 local lua_version = jit and jit.version or _VERSION
+
 
 return {
   ["/"] = {
@@ -21,17 +23,16 @@ return {
       local prng_seeds = {}
 
       do
-        local rows, err = dao.plugins:find_all()
-        if err then
-          return helpers.responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
-        end
-
-        local map = {}
-        for _, row in ipairs(rows) do
-          if not map[row.name] then
-            distinct_plugins[#distinct_plugins+1] = row.name
+        local set = {}
+        for row, err in kong.db.plugins:each() do
+          if err then
+            return helpers.responses.send_HTTP_INTERNAL_SERVER_ERROR(err)
           end
-          map[row.name] = true
+
+          if not set[row.name] then
+            distinct_plugins[#distinct_plugins+1] = row.name
+            set[row.name] = true
+          end
         end
       end
 

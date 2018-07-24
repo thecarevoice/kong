@@ -23,6 +23,7 @@ local CORE_ENTITIES = {
   "services",
   "certificates",
   "snis",
+  "plugins",
 }
 
 

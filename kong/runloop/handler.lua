@@ -86,10 +86,12 @@ end
 
 local function build_router(db, version)
   local routes, i = {}, 0
-  local routes_iterator = db.routes:each()
 
-  local route, err = routes_iterator()
-  while route do
+  for route, err in db.routes:each() do
+    if err then
+      return nil, "could not load routes: " .. err
+    end
+
     local service_pk = route.service
 
     if not service_pk then
@@ -118,12 +120,6 @@ local function build_router(db, version)
 
     i = i + 1
     routes[i] = r
-
-    route, err = routes_iterator()
-  end
-
-  if err then
-    return nil, "could not load routes: " .. err
   end
 
   sort(routes, function(r1, r2)
@@ -134,6 +130,7 @@ local function build_router(db, version)
     return r1.regex_priority > r2.regex_priority
   end)
 
+  local err
   router, err = Router.new(routes)
   if not router then
     return nil, "could not create router: " .. err

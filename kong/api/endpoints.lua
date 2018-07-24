@@ -159,7 +159,7 @@ end
 --
 -- /services
 local function post_collection_endpoint(schema, foreign_schema, foreign_field_name)
-  return function(self, db, helpers)
+  return function(self, db, helpers, post_process)
     if foreign_schema then
       local foreign_entity, _, err_t = select_entity(self, db, foreign_schema)
       if err_t then
@@ -176,6 +176,10 @@ local function post_collection_endpoint(schema, foreign_schema, foreign_field_na
     local entity, _, err_t = db[schema.name]:insert(self.args.post)
     if err_t then
       return handle_error(err_t)
+    end
+
+    if post_process then
+      entity = post_process(entity)
     end
 
     return helpers.responses.send_HTTP_CREATED(entity)
@@ -446,7 +450,11 @@ local function generate_endpoints(schema, endpoints)
 end
 
 
-local Endpoints = { handle_error = handle_error }
+local Endpoints = {
+  handle_error = handle_error,
+  get_collection_endpoint = get_collection_endpoint,
+  post_collection_endpoint = post_collection_endpoint,
+}
 
 
 function Endpoints.new(schema, endpoints)

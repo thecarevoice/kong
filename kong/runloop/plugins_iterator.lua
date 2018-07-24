@@ -13,13 +13,11 @@ local function load_plugin_into_memory(route_id,
                                        consumer_id,
                                        plugin_name,
                                        api_id)
-  local rows, err = kong.dao.plugins:find_all {
-             name = plugin_name,
-         route_id = route_id,
-       service_id = service_id,
-      consumer_id = consumer_id,
-           api_id = api_id,
-  }
+  local rows, err = kong.db.plugins:select_by_ids(plugin_name,
+                                                  route_id,
+                                                  service_id,
+                                                  consumer_id,
+                                                  api_id)
   if err then
     return nil, tostring(err)
   end
@@ -52,7 +50,7 @@ local function load_plugin_configuration(ctx,
                                          consumer_id,
                                          plugin_name,
                                          api_id)
-  local plugin_cache_key = kong.dao.plugins:cache_key(plugin_name,
+  local plugin_cache_key = kong.db.plugins:cache_key(plugin_name,
                                                             route_id,
                                                             service_id,
                                                             consumer_id,

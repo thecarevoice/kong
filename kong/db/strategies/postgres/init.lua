@@ -845,7 +845,7 @@ function _mt:each(size)
     if i > size and offset then
       i, rows, err, offset = 1, self:page(size, offset)
       if not rows then
-        return nil, err
+        return false, err
       end
 
       page = page + 1
@@ -858,7 +858,11 @@ function _mt:each(size)
 end
 
 
-local _M  = {}
+local _M  = {
+  CUSTOM_STRATEGIES = {
+    plugins  = require("kong.db.strategies.postgres.plugins"),
+  }
+}
 
 
 function _M.new(connector, schema, errors)
