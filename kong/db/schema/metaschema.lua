@@ -106,6 +106,7 @@ local entity_checkers = {
       },
     },
   },
+  { composite_unique = { type = "array", elements = { type = "string" } } },
 }
 
 local entity_check_names = {}

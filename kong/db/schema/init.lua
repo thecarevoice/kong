@@ -449,6 +449,15 @@ Schema.entity_checkers = {
     end,
   },
 
+  composite_unique = {
+    fn = function()
+      -- This entity checker only verifies the presence of the
+      -- necessary fields. The actual uniqueness check is performed
+      -- in the generic DAO layer.
+      return true
+    end,
+  },
+
 }
 
 

@@ -31,6 +31,26 @@ DAO.__index = DAO
 
 
 DAO.entity_checkers = {
+  composite_unique = function(self, entity, field_names)
+    -- FIXME do not iterate all, filter by fields listed in `field_names`
+    for item in self:each() do
+      local all_eq = true
+      for _, field_name in ipairs(field_names) do
+        if item[field_name] ~= entity[field_name] then
+          all_eq = false
+          break
+        end
+      end
+      if all_eq then
+        local err_data = {}
+        for _, field_name in ipairs(field_names) do
+          err_data[field_name] = entity[field_name]
+        end
+        return false, self.errors:unique_violation(err_data)
+      end
+    end
+    return true
+  end
 }
 
 
