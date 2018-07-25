@@ -1712,5 +1712,6 @@ for _, strategy in helpers.each_strategy() do
         end) -- paginates
       end) -- routes:for_service()
     end) -- Services and Routes association
+
   end) -- kong.db [strategy]
 end

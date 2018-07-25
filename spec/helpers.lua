@@ -7,7 +7,7 @@
 
 local BIN_PATH = "bin/kong"
 local TEST_CONF_PATH = "spec/kong_tests.conf"
-local CUSTOM_PLUGIN_PATH = "./spec/fixtures/custom_plugins/?.lua"
+local CUSTOM_PLUGIN_PATH = "./spec/fixtures/custom_plugins/?.lua;./?/init.lua"
 local MOCK_UPSTREAM_PROTOCOL = "http"
 local MOCK_UPSTREAM_SSL_PROTOCOL = "https"
 local MOCK_UPSTREAM_HOST = "127.0.0.1"
@@ -15,6 +15,7 @@ local MOCK_UPSTREAM_HOSTNAME = "localhost"
 local MOCK_UPSTREAM_PORT = 15555
 local MOCK_UPSTREAM_SSL_PORT = 15556
 
+local plugins_loader = require "kong.runloop.plugins_loader"
 local conf_loader = require "kong.conf_loader"
 local DAOFactory = require "kong.dao.factory"
 local Blueprints = require "spec.fixtures.blueprints"
@@ -145,6 +146,7 @@ local function get_db_utils(strategy, tables)
   -- new DAO (DB module)
   local db = assert(DB.new(conf, strategy))
   assert(db:init_connector())
+  assert(plugins_loader.load_plugins(conf, db))
 
   -- legacy DAO
   local dao

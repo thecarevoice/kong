@@ -30,6 +30,45 @@ local DAO   = {}
 DAO.__index = DAO
 
 
+local function deep_compare_pk(a, b)
+  if a == b then
+    return true
+  end
+
+  for k, ak in pairs(a) do
+    local bk = b[k]
+    if type(ak) == "table" and type(bk) == "table" then
+      if not deep_compare_pk(ak, bk) then
+        return false
+      end
+    elseif ak ~= bk then
+      return false
+    end
+  end
+  return true
+end
+
+
+local function compare_pk(a, b, fields)
+  if a == b then
+    return true
+  end
+
+  for _, k in ipairs(fields) do
+    local ak = a[k]
+    local bk = b[k]
+    if type(ak) == "table" and type(bk) == "table" then
+      if not deep_compare_pk(ak, bk) then
+        return false
+      end
+    elseif ak ~= bk then
+      return false
+    end
+  end
+  return true
+end
+
+
 DAO.entity_checkers = {
   composite_unique = function(self, entity, field_names)
     -- FIXME do not iterate all, filter by fields listed in `field_names`
@@ -37,17 +76,11 @@ DAO.entity_checkers = {
       if err then
         return false, self.errors:database_error(err)
       end
-      local all_eq = true
-      for _, field_name in ipairs(field_names) do
-        if item[field_name] ~= entity[field_name] then
-          all_eq = false
-          break
-        end
-      end
-      if all_eq then
+
+      if compare_pk(item, entity, field_names) then
         local err_data = {}
         for _, field_name in ipairs(field_names) do
-          err_data[field_name] = entity[field_name]
+          err_data[field_name] = item[field_name]
         end
         return false, self.errors:unique_violation(err_data)
       end
@@ -67,14 +100,14 @@ local function check_entity_constraints(self, entity)
     local data = check[name]
 
     for _, field_name in ipairs(data) do
-      if not entity[field_name] then
+      if entity[field_name] == nil then
         goto continue
       end
     end
 
     local fn = self.entity_checkers[name]
     if fn then
-      local ok, err = fn()
+      local ok, err = fn(self, entity, data)
       if not ok then
         return nil, err
       end
@@ -179,7 +212,7 @@ local function generate_foreign_key_methods(schema)
           return nil, tostring(err_t), err_t
         end
 
-        local ok, err_t = check_entity_constraints(self, entity)
+        local ok, err_t = check_entity_constraints(self, entity_to_update)
         if not ok then
           return nil, tostring(err_t), err_t
         end
@@ -216,7 +249,7 @@ local function generate_foreign_key_methods(schema)
           return nil, tostring(err_t), err_t
         end
 
-        local ok, err_t = check_entity_constraints(self, entity)
+        local ok, err_t = check_entity_constraints(self, entity_to_upsert)
         if not ok then
           return nil, tostring(err_t), err_t
         end
@@ -400,15 +433,13 @@ function DAO:insert(entity)
     return nil, tostring(err_t), err_t
   end
 
-print("ETI--> ", require"inspect"(entity))
-
   local ok, errors = self.schema:validate(entity_to_insert)
   if not ok then
     local err_t = self.errors:schema_violation(errors)
     return nil, tostring(err_t), err_t
   end
 
-  local ok, err_t = check_entity_constraints(self, entity)
+  local ok, err_t = check_entity_constraints(self, entity_to_insert)
   if not ok then
     return nil, tostring(err_t), err_t
   end
@@ -456,7 +487,7 @@ function DAO:update(primary_key, entity)
     return nil, tostring(err_t), err_t
   end
 
-  local ok, err_t = check_entity_constraints(self, entity)
+  local ok, err_t = check_entity_constraints(self, entity_to_update)
   if not ok then
     return nil, tostring(err_t), err_t
   end
@@ -504,7 +535,7 @@ function DAO:upsert(primary_key, entity)
     return nil, tostring(err_t), err_t
   end
 
-  local ok, err_t = check_entity_constraints(self, entity)
+  local ok, err_t = check_entity_constraints(self, entity_to_upsert)
   if not ok then
     return nil, tostring(err_t), err_t
   end

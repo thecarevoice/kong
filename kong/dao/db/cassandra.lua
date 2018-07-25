@@ -297,6 +297,8 @@ function _M:query(query, args, options, schema, no_keyspace)
     coordinator_opts.no_keyspace = true
   end
 
+print(query)
+print(require"inspect"(args))
   if coordinator then
     local res, err = coordinator:execute(query, args, coordinator_opts)
     if not res then

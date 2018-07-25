@@ -1098,13 +1098,13 @@ function Schema:validate(input, full_check)
     full_check = true
   end
 
-print("VALID--> ", require"inspect"(input))
-print("schema--> ", require"inspect"(self))
+--print("VALID--> ", require"inspect"(input))
+--print("schema--> ", require"inspect"(self))
 
   local ok, subschema_error
   if self.subschema_key then
     local key = input[self.subschema_key]
-print(tostring(self), " -> ", self.name, " added subschema ", key)
+--print(tostring(self), " -> ", self.name, " added subschema ", key)
     if not (self.subschemas and self.subschemas[key]) then
       subschema_error = validation_errors.SUBSCHEMA_UNKNOWN:format(key)
     end

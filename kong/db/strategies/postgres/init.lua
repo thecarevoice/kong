@@ -505,7 +505,7 @@ local function execute(strategy, statement_name, attributes, is_update)
 
   local sql = statement.make(argv)
 
-print(sql)
+--print(sql)
   return connector:query(sql)
 end
 
@@ -639,7 +639,7 @@ end
 
 function _mt:insert(entity)
 
-print("COLLAPS--> ", require"inspect"(self.collapse(entity)))
+--print("COLLAPS--> ", require"inspect"(self.collapse(entity)))
 
   local res, err = execute(self, "insert", self.collapse(entity))
   if res then
