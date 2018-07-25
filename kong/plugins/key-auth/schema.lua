@@ -23,20 +23,13 @@ local function check_keys(keys)
 end
 
 
-local function default_key_names(t)
-  if not t.key_names then
-    return { "apikey" }
-  end
-end
-
-
 return {
   no_consumer = true,
   fields = {
     key_names = {
       required = true,
       type = "array",
-      default = default_key_names,
+      default = { "apikey" },
       func = check_keys,
     },
     hide_credentials = {

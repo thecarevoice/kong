@@ -4,7 +4,7 @@ local fmt = string.format
 local Plugins = {}
 
 
-local function escape(connector, value)
+local function convert_input(connector, value)
   return (value == nil or value == ngx.null)
          and "NULL"
          or connector:escape_literal(value)
@@ -34,11 +34,11 @@ function Plugins:select_by_ids(name, route_id, service_id, consumer_id, api_id)
   local connector = self.connector
 
   local sql = fmt(select_q,
-    escape(connector, name),
-    escape(connector, route_id),
-    escape(connector, service_id),
-    escape(connector, consumer_id),
-    escape(connector, api_id)
+    convert_input(connector, name),
+    convert_input(connector, route_id),
+    convert_input(connector, service_id),
+    convert_input(connector, consumer_id),
+    convert_input(connector, api_id)
   )
 
   local res, err = connector:query(sql)

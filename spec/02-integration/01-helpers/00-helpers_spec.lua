@@ -53,6 +53,7 @@ for _, strategy in helpers.each_strategy() do
           },
         })
         local json = assert.response(r).has.jsonbody()
+print(require"inspect"(json))
         local params = json.post_data.params
         assert.equals("alice",  params["names[1]"])
         assert.equals("bob",    params["names[2]"])

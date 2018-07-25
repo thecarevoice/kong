@@ -350,6 +350,7 @@ function _M:query(query, schema)
     return nil, Errors.db(err)
   end
 
+print(query)
   local res, err = pg:query(query)
   if conn_opts.socket_type == "nginx" then
     pg:keepalive()

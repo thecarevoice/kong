@@ -1098,6 +1098,9 @@ function Schema:validate(input, full_check)
     full_check = true
   end
 
+print("VALID--> ", require"inspect"(input))
+print("schema--> ", require"inspect"(self))
+
   local ok, subschema_error
   if self.subschema_key then
     local key = input[self.subschema_key]

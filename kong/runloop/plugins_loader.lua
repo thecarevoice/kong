@@ -35,6 +35,7 @@ local function convert_legacy_schema(name, old_schema)
   for old_fname, old_fdata in pairs(old_schema.fields) do
     local new_fdata = {}
     local new_field = { [old_fname] = new_fdata }
+    local elements = {}
     for k, v in pairs(old_fdata) do
 
       if k == "type" then
@@ -43,13 +44,15 @@ local function convert_legacy_schema(name, old_schema)
           new_fdata.custom_validator = validate_url
 
         elseif v == "table" then
-          new_fdata.type = "record"
+          if old_fdata.schema.flexible then
+            new_fdata.type = "map"
+          else
+            new_fdata.type = "record"
+          end
 
         elseif v == "array" then
           new_fdata.type = "array"
-          new_fdata.elements = {
-            type = "string"
-          }
+          elements.type = "string"
           -- FIXME stored as JSON in old db
 
         elseif v == "timestamp" then
@@ -72,14 +75,28 @@ local function convert_legacy_schema(name, old_schema)
         if err then
           return nil, err
         end
-        new_fdata.fields = rfields.fields
+        rfields = rfields.fields.config.fields
+
+        if v.flexible then
+          new_fdata.keys = { type = "string" }
+          new_fdata.values = {
+            type = "record",
+            fields = rfields,
+          }
+        else
+          new_fdata.fields = rfields
+        end
 
       elseif k == "immutable" then
         -- FIXME really ignore?
         ngx_log(ngx_DEBUG, "Ignoring 'immutable' property")
 
       elseif k == "enum" then
-        new_fdata.one_of = v
+        if old_fdata.type == "array" then
+          elements.one_of = v
+        else
+          new_fdata.one_of = v
+        end
 
       elseif k == "default"
           or k == "required"
@@ -90,10 +107,17 @@ local function convert_legacy_schema(name, old_schema)
         -- FIXME some will become custom validators, some entity checks
         ngx_log(ngx_WARN, "Ignoring 'func' property, validation will not run!")
 
+      elseif k == "new_type" then
+        new_field[old_fname] = v
+        break
+
       else
         return nil, "unknown legacy field attribute: " .. require"inspect"(k)
       end
 
+    end
+    if new_fdata.type == "array" then
+      new_fdata.elements = elements
     end
     table.insert(new_schema.fields.config.fields, new_field)
   end
@@ -101,7 +125,7 @@ local function convert_legacy_schema(name, old_schema)
   if old_schema.no_consumer then
     table.insert(new_schema.fields, { consumer = typedefs.no_consumer })
   end
-
+print("CONVERTED ", name, " TO ", require"inspect"(new_schema))
   return new_schema
 end
 
@@ -148,7 +172,7 @@ function plugins_loader.load_plugins(kong_conf, db)
     if not schema.name then
       schema, err = convert_legacy_schema(plugin, schema)
       if err then
-        return nil, "failed converting legacy schema: " .. err
+        return nil, "failed converting legacy schema for " .. plugin .. ": " .. err
       end
     end
 

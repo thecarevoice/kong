@@ -400,6 +400,8 @@ function DAO:insert(entity)
     return nil, tostring(err_t), err_t
   end
 
+print("ETI--> ", require"inspect"(entity))
+
   local ok, errors = self.schema:validate(entity_to_insert)
   if not ok then
     local err_t = self.errors:schema_violation(errors)

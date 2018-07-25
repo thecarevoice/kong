@@ -7,12 +7,11 @@ local fmt = string.format
 local Plugins = {}
 
 
-local select_q = "SELECT * FROM plugins " ..
-                 " WHERE name = ?" ..
-                 " AND route_id = ?" ..
-                 " AND service_id = ?" ..
-                 " AND consumer_id = ?" ..
-                 " AND api_id = ?"
+local function convert_input(value, typ)
+  return (value == nil or value == ngx.null)
+         and cassandra.null
+         or cassandra[typ](value)
+end
 
 
 local function convert_foreign(row, field, id_field)
@@ -26,6 +25,15 @@ local function convert_foreign(row, field, id_field)
 end
 
 
+local select_q = "SELECT * FROM plugins " ..
+                 " WHERE name = ?" ..
+                 " AND route_id = ?" ..
+                 " AND service_id = ?" ..
+                 " AND consumer_id = ?" ..
+                 " AND api_id = ?" ..
+                 " ALLOW FILTERING"
+
+
 function Plugins:select_by_ids(name, route_id, service_id, consumer_id, api_id)
   local connector = self.connector
   local cluster = connector.cluster
@@ -35,11 +43,11 @@ function Plugins:select_by_ids(name, route_id, service_id, consumer_id, api_id)
   local count = 0
 
   local args = {
-    cassandra.text(name),
-    cassandra.uuid(route_id),
-    cassandra.uuid(service_id),
-    cassandra.uuid(consumer_id),
-    cassandra.uuid(api_id),
+    convert_input(name, "text"),
+    convert_input(route_id, "uuid"),
+    convert_input(service_id, "uuid"),
+    convert_input(consumer_id, "uuid"),
+    convert_input(api_id, "uuid"),
   }
   for rows, err in cluster:iterate(select_q, args) do
     if err then
