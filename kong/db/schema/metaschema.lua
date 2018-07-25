@@ -138,6 +138,7 @@ local meta_errors = {
   BOOLEAN = "'%s' must be a boolean",
   TYPE = "missing type declaration",
   FIELDS_ARRAY = "each entry in fields must be a sub-table",
+  FIELDS_EMPTY = "fields table is empty",
   FIELDS_KEY = "each key in fields must be a string",
   ENDPOINT_KEY = "value must be a field name",
   ENDPOINT_KEY_UNIQUE = "endpoint key must be a unique field",
@@ -212,6 +213,10 @@ local check_fields = function(schema, errors)
       break
     end
     local k = next(item)
+    if not k then
+      errors["fields"] = meta_errors.FIELDS_EMPTY
+      break
+    end
     local field = item[k]
     if type(field) == "table" then
       check_field(k, field, errors)
@@ -294,6 +299,12 @@ local MetaSchema = Schema.new({
     {
       subschema_key = {
         type = "string",
+        nilable = true,
+      },
+    },
+    {
+      legacy = {
+        type = "boolean",
         nilable = true,
       },
     },

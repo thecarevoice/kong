@@ -35,6 +35,8 @@ local _M = {}
 --    end
 function _M.plugin_config_iterator(dao, plugin_name)
   local db = dao.db.new_db
+
+for k,v in pairs(db) do print(k,v) end
   -- iterates over rows
   local run_rows = function(t)
     for _, row in ipairs(t) do
@@ -59,10 +61,8 @@ function _M.plugin_config_iterator(dao, plugin_name)
     return true
   end
 
-  local db_type = db.strategy.name
-
   local coro
-  if db_type == "cassandra" then
+  if db.name == "cassandra" then
     coro = coroutine.create(function()
       local coordinator = dao.db:get_coordinator()
       for rows, err in coordinator:iterate([[
@@ -76,7 +76,7 @@ function _M.plugin_config_iterator(dao, plugin_name)
       end
     end)
 
-  elseif db_type == "postgres" then
+  elseif db.name == "postgres" then
     coro = coroutine.create(function()
       local rows, err = dao.db:query([[
         SELECT * FROM plugins WHERE name = ']] .. plugin_name .. [[';
@@ -90,7 +90,7 @@ function _M.plugin_config_iterator(dao, plugin_name)
 
   else
     coro = coroutine.create(function()
-      return nil, nil, "unknown database type: " .. tostring(db_type)
+      return nil, nil, "unknown database type: " .. tostring(db.name)
     end)
   end
 

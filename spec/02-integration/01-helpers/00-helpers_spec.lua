@@ -28,7 +28,7 @@ for _, strategy in helpers.each_strategy() do
     end)
 
     teardown(function()
-      helpers.stop_kong()
+      helpers.stop_kong(nil, true)
     end)
 
     before_each(function()

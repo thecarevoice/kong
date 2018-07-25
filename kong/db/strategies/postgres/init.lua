@@ -10,6 +10,7 @@ local encode_array  = arrays.encode_array
 local encode_json   = json.encode_json
 local setmetatable  = setmetatable
 local concat        = table.concat
+local insert        = table.insert
 local ipairs        = ipairs
 local pairs         = pairs
 local error         = error
@@ -504,6 +505,7 @@ local function execute(strategy, statement_name, attributes, is_update)
 
   local sql = statement.make(argv)
 
+print(sql)
   return connector:query(sql)
 end
 
@@ -636,6 +638,9 @@ end
 
 
 function _mt:insert(entity)
+
+print("COLLAPS--> ", require"inspect"(self.collapse(entity)))
+
   local res, err = execute(self, "insert", self.collapse(entity))
   if res then
     local row = res[1]
@@ -890,7 +895,7 @@ function _M.new(connector, schema, errors)
   local foreign_key_indexes_escaped   = {}
   local foreign_key_indexes           = {}
   local foreign_key_count             = 0
-  local foreign_key_map               = {}
+  local foreign_key_list              = {}
   local foreign_keys                  = {}
 
   local unique_fields_count           = 0
@@ -974,11 +979,11 @@ function _M.new(connector, schema, errors)
         foreign_key_names[i]   = name
         foreign_key_escaped[i] = name_escaped
         foreign_col_names[i]   = escape_identifier(connector, foreign_field_name)
-        foreign_key_map[i]     = {
+        insert(foreign_key_list, {
           from   = name,
           entity = field_name,
           to     = foreign_field_name
-        }
+        })
       end
 
       foreign_keys[field_name] = {
@@ -1307,9 +1312,9 @@ function _M.new(connector, schema, errors)
     schema             = schema,
     errors             = errors,
     expand             = foreign_key_count > 0 and
-                         expand(table_name .. "_expand", foreign_key_map) or
+                         expand(table_name .. "_expand", foreign_key_list) or
                          noop,
-    collapse           = collapse(table_name .. "_collapse", foreign_key_map),
+    collapse           = collapse(table_name .. "_collapse", foreign_key_list),
     [PRIVATE]          = {
       fields           = fields_hash,
       statements       = {

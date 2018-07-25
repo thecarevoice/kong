@@ -23,11 +23,11 @@ return {
       local post_process = function(data)
         local r_data = utils.deep_copy(data)
         r_data.config = nil
-        if data.service_id then
+        if data.service.id then
           r_data.e = "s"
-        elseif data.route_id then
+        elseif data.route.id then
           r_data.e = "r"
-        elseif data.api_id then
+        elseif data.api.id then
           r_data.e = "a"
         end
         reports.send("api", r_data)

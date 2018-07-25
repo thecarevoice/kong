@@ -16,7 +16,10 @@ end
 
 
 function Blueprint:insert(overrides)
-  local entity, err = self.dao:insert(self:build(overrides))
+  local tbl = self:build(overrides)
+print("IN---> ", require"inspect"(tbl))
+  local entity, err = self.dao:insert(tbl)
+print("OUT--> ", require"inspect"(entity))
   if err then
     error(err, 2)
   end

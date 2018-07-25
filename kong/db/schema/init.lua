@@ -1101,6 +1101,7 @@ function Schema:validate(input, full_check)
   local ok, subschema_error
   if self.subschema_key then
     local key = input[self.subschema_key]
+print(tostring(self), " -> ", self.name, " added subschema ", key)
     if not (self.subschemas and self.subschemas[key]) then
       subschema_error = validation_errors.SUBSCHEMA_UNKNOWN:format(key)
     end
@@ -1345,7 +1346,7 @@ function Schema.new_subschema(self, key, definition)
     self.subschemas = {}
   end
   self.subschemas[key] = subschema
-
+print(tostring(self), " -> ", self.name, " added subschema ", key)
   return true
 end
 

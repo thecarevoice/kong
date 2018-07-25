@@ -239,6 +239,11 @@ do
   -- Custom Routes
   for _, dao in pairs(singletons.db.daos) do
     local schema = dao.schema
+
+    if schema.legacy then
+      goto continue
+    end
+
     local ok, custom_endpoints = utils.load_module_if_exists("kong.api.routes." .. schema.name)
     if ok then
       for route_pattern, verbs in pairs(custom_endpoints) do
@@ -265,6 +270,8 @@ do
         end
       end
     end
+
+    ::continue::
   end
 
   attach_new_db_routes(routes)

@@ -87,4 +87,22 @@ typedefs.uuid = Schema.define {
   auto = true,
 }
 
+typedefs.auto_timestamp = Schema.define {
+  type = "integer",
+  timestamp = true,
+  auto = true,
+}
+
+typedefs.timestamp = Schema.define {
+  type = "integer",
+  timestamp = true,
+}
+
+typedefs.no_consumer = Schema.define {
+  type = "foreign",
+  reference = "consumers",
+  eq = ngx.null,
+}
+
+
 return typedefs

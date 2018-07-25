@@ -71,10 +71,10 @@ local function load_plugin_configuration(ctx,
 
   if plugin ~= nil and plugin.enabled then
     local cfg       = plugin.config or {}
-    cfg.api_id      = plugin.api_id
-    cfg.route_id    = plugin.route_id
-    cfg.service_id  = plugin.service_id
-    cfg.consumer_id = plugin.consumer_id
+    cfg.api_id      = plugin.api.id
+    cfg.route_id    = plugin.route.id
+    cfg.service_id  = plugin.service.id
+    cfg.consumer_id = plugin.consumer.id
 
     return cfg
   end

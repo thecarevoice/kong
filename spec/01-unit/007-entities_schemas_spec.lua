@@ -1,5 +1,4 @@
 local api_schema = require "kong.dao.schemas.apis"
-local plugins_schema = require "kong.dao.schemas.plugins"
 local targets_schema = require "kong.dao.schemas.targets"
 local upstreams_schema = require "kong.dao.schemas.upstreams"
 local validations = require "kong.dao.schemas_validation"
@@ -8,7 +7,6 @@ local validate_entity = validations.validate_entity
 describe("Entities Schemas", function()
 
   for k, schema in pairs({api = api_schema,
-                          plugins = plugins_schema,
                           targets = targets_schema,
                           upstreams = upstreams_schema}) do
     it(k .. " schema should have some required properties", function()
@@ -589,6 +587,8 @@ describe("Entities Schemas", function()
     end)
   end)
 
+--[[
+--FIXME
   --
   -- Plugins
   --
@@ -849,6 +849,7 @@ describe("Entities Schemas", function()
       end)
     end)
   end)
+]]
 
   --
   -- UPSTREAMS
