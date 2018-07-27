@@ -133,9 +133,41 @@ local function create_legacy_wrappers(self, constraints)
         return new_dao:select(args)
       end,
 
-      find_all = function(_)
+      find_all = function(_, filt)
+        local rows = {}
+        local filtering = false
+        if filt and next(filt) then
+          filtering = true
+        end
+        for row, err in new_dao:each() do
+          if err then
+            return nil, err
+          end
+          if filtering then
+            local match = true
+            for k,v in pairs(filt) do
+              local foreign = k:match("^(.*)_id$")
+              if foreign then
+                if (row[foreign] == ngx.null and v ~= ngx.null)
+                or (row[foreign].id ~= v) then
+                  goto continue
+                end
+              else
+                if row[k] ~= v then
+                  goto continue
+                end
+              end
+            end
+            if match then
+              rows[#rows + 1] = row
+            end
+          else
+            rows[#rows + 1] = row
+          end
+          ::continue::
+        end
         log.debug(debug.traceback("[legacy wrapper] using legacy wrapper"))
-        return nil, "[legacy wrapper] find_all not implemented"
+        return rows
       end,
 
       find_page = function(_, tbl, page_offset, page_size)

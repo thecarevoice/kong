@@ -28,7 +28,7 @@ for _, strategy in helpers.each_strategy() do
     db.routes:for_service(service_id)
     --]]
 
-    describe("Routes", function()
+    describe("#assoc Routes", function()
       describe(":insert()", function()
         -- no I/O
         it("errors on invalid arg", function()
@@ -567,7 +567,7 @@ for _, strategy in helpers.each_strategy() do
           end
         end)
 
-        describe("page size", function()
+        describe("page size #pagination", function()
           setup(function()
             assert(db:truncate("routes"))
 
@@ -1296,7 +1296,7 @@ for _, strategy in helpers.each_strategy() do
     --
     --]]
 
-    describe("Services and Routes association", function()
+    describe("#assoc Services and Routes association", function()
       it(":insert() a Route with a relation to a Service", function()
         local service = assert(db.services:insert({
           protocol = "http",
@@ -1378,9 +1378,9 @@ for _, strategy in helpers.each_strategy() do
         }, err_t)
       end)
 
-      it(":delete() a Service is not allowed if a Route is associated to it", function()
+      it("#only :delete() a Service is not allowed if a Route is associated to it", function()
         local service = bp.services:insert({
-          host = "example.com",
+          host = "example.test",
         })
 
         bp.routes:insert({ service = service, methods = { "GET" } })
@@ -1511,7 +1511,7 @@ for _, strategy in helpers.each_strategy() do
           assert.is_truthy(rows[1].methods.GET)
         end)
 
-        describe("paginates", function()
+        describe("paginates #pagination", function()
           local service
 
           describe("page size", function()

@@ -51,6 +51,7 @@ end
 
 
 function _Services:delete(primary_key)
+print("DELETE ", require'inspect'(primary_key))
   local ok, err_t = self.super.delete(self, primary_key)
   if not ok then
     return nil, err_t
