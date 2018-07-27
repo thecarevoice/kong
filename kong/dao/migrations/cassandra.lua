@@ -250,7 +250,7 @@ return {
         created_at timestamp
       );
 
-      CREATE TABLE ssl_servers_names(
+      CREATE TABLE IF NOT EXISTS ssl_servers_names(
         name text,
         ssl_certificate_id uuid,
         created_at timestamp,

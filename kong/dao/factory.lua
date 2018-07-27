@@ -445,11 +445,13 @@ local function migrate(self, identifier, migrations_modules, cur_migrations, on_
   end
 
   for _, migration in ipairs(to_run) do
+
     local err
     local mig_type = type(migration.up)
     if mig_type == "string" then
       err = self.db:queries(migration.up)
     elseif mig_type == "function" then
+print("SALUT ", _)
       err = migration.up(self.db, self.kong_config, self)
     end
 

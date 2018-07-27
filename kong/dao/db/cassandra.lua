@@ -30,7 +30,7 @@ _M.dao_insert_values = {
   end
 }
 
-_M.additional_tables = { "cluster_events", "routes", "services" }
+_M.additional_tables = { "cluster_events", "routes", "services", "consumers", "plugins" }
 
 function _M.new(kong_config)
   local self = _M.super.new()
@@ -297,8 +297,8 @@ function _M:query(query, args, options, schema, no_keyspace)
     coordinator_opts.no_keyspace = true
   end
 
-print(query)
-print(require"inspect"(args))
+print("OLD DAO CQL: ", query)
+print("OLD DAO CQL ARGS: ", require"inspect"(args))
   if coordinator then
     local res, err = coordinator:execute(query, args, coordinator_opts)
     if not res then

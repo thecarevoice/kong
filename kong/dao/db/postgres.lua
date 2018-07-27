@@ -41,7 +41,7 @@ _M.dao_insert_values = {
   end
 }
 
-_M.additional_tables = { "ttls", "cluster_events", "routes", "services" }
+_M.additional_tables = { "ttls", "cluster_events", "routes", "services", "consumers", "plugins" }
 
 function _M.new(kong_config)
   local self = _M.super.new()
@@ -350,7 +350,7 @@ function _M:query(query, schema)
     return nil, Errors.db(err)
   end
 
-print(query)
+print("OLD DAO SQL: ", query)
   local res, err = pg:query(query)
   if conn_opts.socket_type == "nginx" then
     pg:keepalive()

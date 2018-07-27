@@ -30,7 +30,7 @@ local DAO   = {}
 DAO.__index = DAO
 
 
-local function deep_compare_pk(a, b)
+local function deep_compare(a, b)
   if a == b then
     return true
   end
@@ -38,7 +38,7 @@ local function deep_compare_pk(a, b)
   for k, ak in pairs(a) do
     local bk = b[k]
     if type(ak) == "table" and type(bk) == "table" then
-      if not deep_compare_pk(ak, bk) then
+      if not deep_compare(ak, bk) then
         return false
       end
     elseif ak ~= bk then
@@ -49,7 +49,7 @@ local function deep_compare_pk(a, b)
 end
 
 
-local function compare_pk(a, b, fields)
+local function compare_fields(a, b, fields)
   if a == b then
     return true
   end
@@ -58,7 +58,7 @@ local function compare_pk(a, b, fields)
     local ak = a[k]
     local bk = b[k]
     if type(ak) == "table" and type(bk) == "table" then
-      if not deep_compare_pk(ak, bk) then
+      if not deep_compare(ak, bk) then
         return false
       end
     elseif ak ~= bk then
@@ -72,12 +72,17 @@ end
 DAO.entity_checkers = {
   composite_unique = function(self, entity, field_names)
     -- FIXME do not iterate all, filter by fields listed in `field_names`
+    local entity_pk = self.schema:extract_pk_values(entity)
+
     for item, err in self:each() do
       if err then
         return false, self.errors:database_error(err)
       end
 
-      if compare_pk(item, entity, field_names) then
+      local item_pk = self.schema:extract_pk_values(item)
+
+      if (not deep_compare(entity_pk, item_pk))
+         and compare_fields(item, entity, field_names) then
         local err_data = {}
         for _, field_name in ipairs(field_names) do
           err_data[field_name] = item[field_name]

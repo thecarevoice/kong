@@ -190,6 +190,8 @@ function CassandraConnector:query(query, args, opts, operation)
   end
 
   -- TODO: prepare queries
+print("NEW DAO CQL: ", query)
+print("NEW DAO CQL ARGS: ", require"inspect"(args))
   local res, err = coordinator:execute(query, args, opts)
 
   if not self.connection then
