@@ -124,8 +124,9 @@ local function get_collection_endpoint(schema, foreign_schema, foreign_field_nam
     end
 
     local dao = db[schema.name]
-    local data, _, err_t, offset = dao["for_" .. foreign_field_name](dao, { id = foreign_entity.id },
-                                                                     self.args.size, self.args.offset)
+    local data, offset
+    data, _, err_t, offset = dao["for_" .. foreign_field_name](dao, { id = foreign_entity.id },
+                                                               self.args.size, self.args.offset)
     if err_t then
       return handle_error(err_t)
     end
@@ -165,7 +166,6 @@ local function post_collection_endpoint(schema, foreign_schema, foreign_field_na
       if err_t then
         return handle_error(err_t)
       end
-
       if not foreign_entity then
         return helpers.responses.send_HTTP_NOT_FOUND()
       end
@@ -174,6 +174,9 @@ local function post_collection_endpoint(schema, foreign_schema, foreign_field_na
     end
 
     local entity, _, err_t = db[schema.name]:insert(self.args.post)
+
+print("ENTITY ", require'inspect'(entity))
+
     if err_t then
       return handle_error(err_t)
     end
@@ -181,6 +184,8 @@ local function post_collection_endpoint(schema, foreign_schema, foreign_field_na
     if post_process then
       entity = post_process(entity)
     end
+
+print("ENTITY ", require'inspect'(entity))
 
     return helpers.responses.send_HTTP_CREATED(entity)
   end
@@ -438,6 +443,7 @@ local function generate_endpoints(schema, endpoints)
 
   for foreign_field_name, foreign_field in schema:each_field() do
     if foreign_field.type == "foreign" then
+
       -- e.g. /routes/:routes/service
       generate_entity_endpoints(endpoints, schema, foreign_field.schema, foreign_field_name)
 

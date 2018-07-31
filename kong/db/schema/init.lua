@@ -728,6 +728,35 @@ local function compatible_fields(f1, f2)
 end
 
 
+local function get_subschema_fields(self, input)
+  if self.subschemas and self.subschema_key then
+    local subschema = self.subschemas[input[self.subschema_key]]
+    if subschema then
+      return self.subschemas[input[self.subschema_key]].fields
+    end
+  end
+  return nil
+end
+
+
+local function resolve_field(self, k, field, subschema_fields)
+  field = field or self.fields[k]
+  if not field then
+    return nil, validation_errors.UNKNOWN
+  end
+  if subschema_fields then
+    local ss_field = subschema_fields[k]
+    if ss_field then
+      if not compatible_fields(field, ss_field) then
+        return nil, validation_errors.SUBSCHEMA_BAD_TYPE
+      end
+      field = ss_field
+    end
+  end
+  return field
+end
+
+
 --- Validate fields of a table, individually, against the schema.
 -- @param self The schema
 -- @param input The input table.
@@ -740,34 +769,22 @@ validate_fields = function(self, input)
 
   local errors = {}
 
-  local subschema_fields
-  if self.subschemas and self.subschema_key then
-    local subschema = self.subschemas[input[self.subschema_key]]
-    if subschema then
-      subschema_fields = self.subschemas[input[self.subschema_key]].fields
-    end
-  end
+  local subschema_fields = get_subschema_fields(self, input)
 
   for k, v in pairs(input) do
+    local err
     local field = self.fields[k]
-    if not field then
-      errors[k] = validation_errors.UNKNOWN
-      goto continue
+    if field and field.type == "self" then
+      field = input
+    else
+      field, err = resolve_field(self, k, field, subschema_fields)
     end
-    field = (field.type == "self") and input or field
-    local _
-    if subschema_fields then
-      local ss_field = subschema_fields[k]
-      if ss_field then
-        if not compatible_fields(field, ss_field) then
-          errors[k] = validation_errors.SUBSCHEMA_BAD_TYPE
-          goto continue
-        end
-        field = ss_field
-      end
+    if field then
+      local _
+      _, errors[k] = self:validate_field(field, v)
+    else
+      errors[k] = err
     end
-    _, errors[k] = self:validate_field(field, v)
-    ::continue::
   end
 
   if next(errors) then
@@ -1213,15 +1230,21 @@ end
 -- which produces the key and the field table,
 -- as in `for field_name, field_data in self:each_field() do`
 -- @return the iteration function
-function Schema:each_field()
+function Schema:each_field(values)
   local i = 1
+
+  local subschema_fields
+  if values then
+    subschema_fields = get_subschema_fields(self, values)
+  end
+
   return function()
     local item = self.fields[i]
     if not self.fields[i] then
       return nil
     end
     local key = next(item)
-    local field = item[key]
+    local field = assert(resolve_field(self, key, item[key], subschema_fields))
     i = i + 1
     return key, field
   end

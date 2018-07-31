@@ -473,8 +473,11 @@ end
 
 
 local function _select(self, cql, args)
+print("SELECTION QUERY ", cql)
+print("SELECTION QUERY ", require'inspect'(args))
   local rows, err = self.connector:query(cql, args, nil, "read")
   if not rows then
+print("LECET FAIL ", err, " ", debug.traceback())
     return nil, self.errors:database_error("could not execute selection query: "
                                            .. err)
   end
@@ -500,7 +503,9 @@ function _mt:insert(entity)
   end
   -- serialize VALUES clause args
 
+print("ENTITY TO INSERT", require'inspect'(entity))
   for field_name, field in schema:each_field() do
+print("INSERT ", field_name)
     if field.type == "foreign" then
       local foreign_pk = entity[field_name]
 
@@ -517,6 +522,7 @@ function _mt:insert(entity)
 
     else
       if field.unique
+        and not field.auto
         and entity[field_name] ~= ngx.null
         and entity[field_name] ~= nil
       then
@@ -542,7 +548,8 @@ function _mt:insert(entity)
   end
 
   -- execute query
-
+print("EXEC INSERT ", cql)
+print("EXEC INSERT ", require'inspect'(args))
   local res, err = self.connector:query(cql, args, nil, "write")
   if not res then
     return nil, self.errors:database_error("could not execute insertion query: "

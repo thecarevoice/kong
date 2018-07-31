@@ -222,7 +222,7 @@ ngx.log(ngx.DEBUG, "Loading Admin API endpoints")
 
 
 -- Load core routes
-for _, v in ipairs({"kong", "apis", "consumers", "plugins", "cache", "upstreams"}) do
+for _, v in ipairs({"kong", "apis", "cache", "upstreams"}) do
   local routes = require("kong.api.routes." .. v)
   attach_routes(routes)
 end
@@ -244,11 +244,15 @@ do
       goto continue
     end
 
+print("CHECKING CUSTOM ROUTES FOR ", schema.name)
+
     local ok, custom_endpoints = utils.load_module_if_exists("kong.api.routes." .. schema.name)
     if ok then
       for route_pattern, verbs in pairs(custom_endpoints) do
+print("PATT ", route_pattern)
         if routes[route_pattern] ~= nil and type(verbs) == "table" then
           for verb, handler in pairs(verbs) do
+print("VERB ", verb)
             local parent = routes[route_pattern]["methods"][verb]
             if parent ~= nil and type(handler) == "function" then
               routes[route_pattern]["methods"][verb] = function(self, db, helpers)
@@ -263,6 +267,7 @@ do
           end
 
         else
+print("DEFAULT ", route_pattern)
           routes[route_pattern] = {
             schema  = dao.schema,
             methods = verbs,

@@ -276,7 +276,7 @@ function CassandraConnector:truncate()
   if not rows then
     return nil, err
   end
-
+print("TRUNCATING ALL BECAUSE OF ", debug.traceback())
   for i = 1, #rows do
     local table_name = self.major_version == 3
                        and rows[i].table_name

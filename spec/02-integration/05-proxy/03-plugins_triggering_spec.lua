@@ -223,7 +223,7 @@ for _, strategy in helpers.each_strategy() do
         db:truncate("routes")
         db:truncate("services")
         db:truncate("consumers")
-        dao:truncate_table("plugins")
+        db:truncate("plugins")
         dao:truncate_table("keyauth_credentials")
 
         do
@@ -441,7 +441,7 @@ for _, strategy in helpers.each_strategy() do
         db:truncate("routes")
         db:truncate("services")
         db:truncate("consumers")
-        dao:truncate_table("plugins")
+        db:truncate("plugins")
         dao:truncate_table("keyauth_credentials")
 
         local service = bp.services:insert {
@@ -516,7 +516,7 @@ for _, strategy in helpers.each_strategy() do
         db:truncate("routes")
         db:truncate("services")
         db:truncate("consumers")
-        dao:truncate_table("plugins")
+        db:truncate("plugins")
         dao:truncate_table("keyauth_credentials")
 
         do

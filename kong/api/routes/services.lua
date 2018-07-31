@@ -41,6 +41,7 @@ return {
         r_data.config = nil
         r_data.e = "s"
         reports.send("api", r_data)
+        return data
       end
       return post_plugin(self, db, helpers, post_process)
     end,

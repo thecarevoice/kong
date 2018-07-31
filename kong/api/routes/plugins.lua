@@ -31,6 +31,7 @@ return {
           r_data.e = "a"
         end
         reports.send("api", r_data)
+        return data
       end
       return parent(post_process)
     end,

@@ -8,7 +8,7 @@ describe("SDK: kong.ctx", function()
   before_each(function()
     bp, db, dao = helpers.get_db_utils()
     assert(db:truncate("routes"))
-    dao:truncate_table("plugins")
+    db:truncate("plugins")
     dao:run_migrations()
   end)
 
@@ -20,7 +20,7 @@ describe("SDK: kong.ctx", function()
     helpers.stop_kong()
 
     assert(db:truncate("routes"))
-    dao:truncate_table("plugins")
+    db:truncate("plugins")
   end)
 
   it("isolates kong.ctx.plugin per-plugin", function()

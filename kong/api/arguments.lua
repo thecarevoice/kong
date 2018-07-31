@@ -231,7 +231,7 @@ infer = function(args, schema)
     return args
   end
 
-  for field_name, field in schema:each_field() do
+  for field_name, field in schema:each_field(args) do
     local value = args[field_name]
     if value then
       args[field_name] = infer_value(value, field)
@@ -616,6 +616,8 @@ local function load(opts)
     local pargs, err = get_post_args(options.max_post_args)
     if pargs then
       if options.decode then
+print("SCHEMA NAME ", options.schema.name)
+print("SCHEMA TABLE ", options.schema.table)
         args.post = decode(pargs, options.schema)
 
       else

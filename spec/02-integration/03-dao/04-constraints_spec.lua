@@ -14,7 +14,7 @@ for _, strategy in helpers.each_strategy() do
     end)
 
     before_each(function()
-      dao:truncate_table("plugins")
+      db:truncate("plugins")
       assert(db:truncate("routes"))
       assert(db:truncate("services"))
       assert(db:truncate("consumers"))

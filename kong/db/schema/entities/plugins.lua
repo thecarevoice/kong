@@ -9,7 +9,14 @@ return {
   subschema_key = "name",
 
   fields = {
-    { id = typedefs.uuid, },
+--    { id = typedefs.uuid, },
+{      id = {
+  type = "string",
+  uuid = true,
+  auto = true,
+  unique = true,
+} },
+
     { name = { type = "string", required = true, }, },
     { created_at = typedefs.auto_timestamp },
     { api = { type = "foreign", reference = "apis", default = ngx.null, on_delete = "cascade", }, },
