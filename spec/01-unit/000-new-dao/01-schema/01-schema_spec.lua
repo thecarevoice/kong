@@ -1525,6 +1525,10 @@ describe("schema", function()
                     { f = { type = "number" }, },
                   },
                   default = { f = 123 } }, },
+          { i = { type = "string", default = function()
+              return "potato"
+            end
+          } }
         }
       })
       check_all_types_covered(Test.fields)
@@ -1537,34 +1541,61 @@ describe("schema", function()
       assert.same("foo",                data.f)
       assert.same({ foo = 1, bar = 2 }, data.g)
       assert.same({ f = 123 },          data.h)
+      assert.same("potato",             data.i)
     end)
 
     it("honors 'false' as a default", function()
       local Test = Schema.new({
         fields = {
           { b = { type = "boolean", default = false }, },
+          { c = { type = "boolean", default = function()
+              return false
+            end
+          }, },
         }
       })
       local t1 = Test:process_auto_fields({})
       assert.is_false(t1.b)
+      assert.is_false(t1.c)
       local t2 = Test:process_auto_fields({ b = false })
       assert.is_false(t2.b)
+      assert.is_false(t2.c)
       local t3 = Test:process_auto_fields({ b = true })
       assert.is_true(t3.b)
+      assert.is_false(t3.c)
+      local t4 = Test:process_auto_fields({ c = false })
+      assert.is_false(t4.b)
+      assert.is_false(t4.c)
+      local t5 = Test:process_auto_fields({ c = true })
+      assert.is_false(t5.b)
+      assert.is_true(t5.c)
     end)
 
     it("honors 'true' as a default", function()
       local Test = Schema.new({
         fields = {
           { b = { type = "boolean", default = true }, },
+          { c = { type = "boolean", default = function()
+              return true
+            end
+          }, },
         }
       })
       local t1 = Test:process_auto_fields({})
       assert.is_true(t1.b)
+      assert.is_true(t1.c)
       local t2 = Test:process_auto_fields({ b = false })
       assert.is_false(t2.b)
+      assert.is_true(t2.c)
       local t3 = Test:process_auto_fields({ b = true })
       assert.is_true(t3.b)
+      assert.is_true(t3.c)
+      local t4 = Test:process_auto_fields({ c = false })
+      assert.is_true(t4.b)
+      assert.is_false(t4.c)
+      local t5 = Test:process_auto_fields({ c = true })
+      assert.is_true(t5.b)
+      assert.is_true(t5.c)
     end)
 
     it("does not demand required fields", function()

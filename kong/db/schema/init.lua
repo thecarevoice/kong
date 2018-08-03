@@ -691,7 +691,11 @@ end
 -- @param entity The entity object where key `k` is missing.
 local function handle_missing_field(k, field, entity)
   if field.default ~= nil then
-    entity[k] = field.default
+    if type(field.default) == "function" then
+      entity[k] = field.default()
+    else
+      entity[k] = field.default
+    end
     return
   end
 
