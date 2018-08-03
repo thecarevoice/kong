@@ -1,15 +1,17 @@
 local utils = require "kong.tools.utils"
+local typedefs = require "kong.db.schema.typedefs"
 
 local SCHEMA = {
-  primary_key = {"id"},
-  table = "keyauth_credentials",
+  name = "keyauth_credentials",
+  primary_key = { "id" },
   cache_key = { "key" },
   fields = {
-    id = {type = "id", dao_insert_value = true},
-    created_at = {type = "timestamp", immutable = true, dao_insert_value = true},
-    consumer_id = {type = "id", required = true, foreign = "consumers:id"},
-    key = {type = "string", required = false, unique = true, default = utils.random_string}
+    { id = typedefs.uuid, },
+    -- FIXME change to typedefs.timestamp when merged
+    { created_at  = { type = "number", timestamp = true, auto = true }, },
+    { consumer = { type = "foreign", required = true, reference = "consumers" }, },
+    { key = { type = "string", required = false, unique = true, default = utils.random_string }, },
   },
 }
 
-return {keyauth_credentials = SCHEMA}
+return { keyauth_credentials = SCHEMA }

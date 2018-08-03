@@ -1,6 +1,5 @@
 local utils = require "kong.tools.utils"
 
-
 local function check_user(anonymous)
   if anonymous == "" or utils.is_valid_uuid(anonymous) then
     return true
@@ -24,13 +23,14 @@ end
 
 
 return {
+  name = "key-auth",
   no_consumer = true,
   fields = {
     key_names = {
       required = true,
       type = "array",
       default = { "apikey" },
-      func = check_keys,
+      custom_validator = check_keys,
     },
     hide_credentials = {
       type = "boolean",
@@ -39,7 +39,7 @@ return {
     anonymous = {
       type = "string",
       default = "",
-      func = check_user,
+      custom_validator = check_user,
     },
     key_in_body = {
       type = "boolean",

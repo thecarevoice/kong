@@ -17,13 +17,11 @@ end
 
 
 local function load_credential(key)
-  local creds, err = kong.dao.keyauth_credentials:find_all {
-    key = key
-  }
-  if not creds then
+  local cred, err = kong.db.keyauth_credentials:select_by_key(key)
+  if not cred then
     return nil, err
   end
-  return creds[1]
+  return cred
 end
 
 
@@ -133,9 +131,8 @@ local function do_authentication(conf)
   -- retrieve our consumer linked to this API key
 
   local cache = kong.cache
-  local dao = kong.dao
 
-  local credential_cache_key = dao.keyauth_credentials:cache_key(key)
+  local credential_cache_key = kong.db.keyauth_credentials:cache_key(key)
   local credential, err = cache:get(credential_cache_key, nil, load_credential,
                                     key)
   if err then
