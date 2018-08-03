@@ -1,6 +1,9 @@
 local constants = require "kong.constants"
 local typedefs = require "kong.db.schema.typedefs"
 local utils = require "kong.tools.utils"
+local Entity = require "kong.db.schema.entity"
+local DAO = require "kong.db.dao"
+local MetaSchema = require "kong.db.schema.metaschema"
 
 
 local plugins_loader = {}
@@ -89,7 +92,7 @@ local function convert_legacy_schema(name, old_schema)
 
       elseif k == "immutable" then
         -- FIXME really ignore?
-        ngx_log(ngx_DEBUG, "Ignoring 'immutable' property")
+        -- ngx_log(ngx_DEBUG, "Ignoring 'immutable' property")
 
       elseif k == "enum" then
         if old_fdata.type == "array" then
@@ -105,7 +108,7 @@ local function convert_legacy_schema(name, old_schema)
 
       elseif k == "func" then
         -- FIXME some will become custom validators, some entity checks
-        ngx_log(ngx_WARN, "Ignoring 'func' property, validation will not run!")
+        --ngx_log(ngx_WARN, "Ignoring 'func' property, validation will not run!")
 
       elseif k == "new_type" then
         new_field[old_fname] = v
@@ -125,7 +128,7 @@ local function convert_legacy_schema(name, old_schema)
   if old_schema.no_consumer then
     table.insert(new_schema.fields, { consumer = typedefs.no_consumer })
   end
-print("CONVERTED ", name, " TO ", require"inspect"(new_schema))
+--print("CONVERTED ", name, " TO ", require"inspect"(new_schema))
   return new_schema
 end
 
@@ -180,7 +183,37 @@ function plugins_loader.load_plugins(kong_conf, db)
     if not ok then
       return nil, "error initializing schema for plugin: " .. err
     end
-print("NEW SUBSCHEMA ", plugin, " IN ", tostring(db.plugins.schema))
+--print("NEW SUBSCHEMA ", plugin, " IN ", tostring(db.plugins.schema))
+
+    local has_daos, daos_schemas = utils.load_module_if_exists("kong.plugins." .. plugin .. ".daos")
+    if has_daos then
+      local Strategy = require(string.format("kong.db.strategies.%s", db.name))
+
+      for name, schema_def in pairs(daos_schemas) do
+        if name ~= "tables" then
+          local ok, err_t = MetaSchema:validate(schema_def)
+          if not ok then
+            return nil, string.format("schema of plugin entity '%s.%s' is invalid: %s", plugin, name,
+                                      -- tostring(db.errors:schema_violation(err_t)))
+                                      require("inspect")(schema_def))
+          end
+          local entity, err = Entity.new(schema_def)
+          if not entity then
+            return nil, string.format("schema of plugin entity '%s.%s' is invalid: %s", plugin, name,
+                                      err)
+          end
+
+          if schema.name then
+            local strategy, err = Strategy.new(db.connector, schema, db.errors)
+            if not strategy then
+              return nil, nil, err
+            end
+
+            db.daos[schema.name] = DAO.new(db, schema, strategy, db.errors)
+          end
+        end
+      end
+    end
 
     ngx_log(ngx_DEBUG, "Loading plugin: " .. plugin)
 
