@@ -3,7 +3,6 @@ local utils = require "kong.tools.utils"
 local reports = require "kong.reports"
 local singletons = require "kong.singletons"
 
---[[
 -- Remove functions from a schema definition so that
 -- cjson can encode the schema.
 local function remove_functions(schema)
@@ -15,7 +14,6 @@ local function remove_functions(schema)
   end
   return copy
 end
-]]
 
 return {
   ["/plugins"] = {
@@ -37,21 +35,20 @@ return {
     end,
   },
 
-  --[[
-  -- FIXME
   ["/plugins/schema/:name"] = {
-    GET = function(self, dao_factory, helpers)
-      local ok, plugin_schema = utils.load_module_if_exists("kong.plugins." .. self.params.name .. ".schema")
-      if not ok then
-        return helpers.responses.send_HTTP_NOT_FOUND("No plugin named '" .. self.params.name .. "'")
+    GET = function(self, db, helpers)
+      local plugin_name = ngx.unescape_uri(self.params.name)
+
+      local schema = db.plugins.schema.subschemas[plugin_name]
+      if not schema then
+      return helpers.responses.send_HTTP_NOT_FOUND("No plugin named '" .. plugin_name .. "'")
       end
 
-      local copy = remove_functions(plugin_schema)
+      local copy = remove_functions(schema)
 
       return helpers.responses.send_HTTP_OK(copy)
     end
   },
-  ]]
 
   ["/plugins/enabled"] = {
     GET = function(_, _, helpers)
