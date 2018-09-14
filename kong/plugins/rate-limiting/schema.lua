@@ -10,9 +10,11 @@ return {
     day = { type = "number" },
     month = { type = "number" },
     year = { type = "number" },
-    limit_by = { type = "string", enum = {"consumer", "credential", "ip"}, default = "consumer" },
+    limit_by = { type = "string", enum = {"consumer", "credential", "key", "ip"}, default = "consumer" },
     policy = { type = "string", enum = {"local", "cluster", REDIS}, default = "cluster" },
     fault_tolerant = { type = "boolean", default = true },
+    key_name = { type = "string" },
+    key_in_body = { type = "boolean", default = false },
     redis_host = { type = "string" },
     redis_port = { type = "number", default = 6379 },
     redis_password = { type = "string" },
@@ -57,6 +59,10 @@ return {
       elseif not plugin_t.redis_timeout then
         return false, Errors.schema "You need to specify a Redis timeout"
       end
+    end
+
+    if plugin_t.limit_by == "key" and not plugin_t.key_name then
+      return false, Errors.schema "You need to specify a key name"
     end
 
     return true
